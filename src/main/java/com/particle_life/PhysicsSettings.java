@@ -32,6 +32,7 @@ public class PhysicsSettings {
      */
     public double dt = 0.02f;
     public Matrix matrix = new DefaultMatrix(6);
+    public Matrix scalematrix = new DefaultMatrix(6);
 
     public PhysicsSettings() {
     }
@@ -45,6 +46,7 @@ public class PhysicsSettings {
         p.force = force;
         p.dt = dt;
         p.matrix = matrix.deepCopy();
+        p.scalematrix = scalematrix.deepCopy();
 
         return p;
     }
@@ -59,6 +61,7 @@ public class PhysicsSettings {
             if (s.force != force) return false;
             if (s.dt != dt) return false;
             if (!s.matrix.equals(matrix)) return false;
+            if (!s.scalematrix.equals(scalematrix)) return false;
 
             return true;
         } else {

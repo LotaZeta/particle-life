@@ -22,7 +22,7 @@ public class Physics {
     // container layout:
     private int nx;
     private int ny;
-    private double containerSize = 0.13;//todo: implement makeContainerNeighborhood() to make this independent of rmax
+    private double containerSize = 0.13;// todo: implement makeContainerNeighborhood() to make this independent of rmax
 
     public Accelerator accelerator;
     public MatrixGenerator matrixGenerator;
@@ -37,15 +37,16 @@ public class Physics {
      */
     private final AtomicBoolean updateThreadsShouldRun = new AtomicBoolean(false);
 
-
     // INITIALIZATION:
 
     /**
-     * Shorthand constructor for {@link #Physics(Accelerator, PositionSetter, MatrixGenerator, TypeSetter)} using
+     * Shorthand constructor for
+     * {@link #Physics(Accelerator, PositionSetter, MatrixGenerator, TypeSetter)}
+     * using
      * <ul>
-     *     <li>{@link DefaultPositionSetter}</li>
-     *     <li>{@link DefaultMatrixGenerator}</li>
-     *     <li>{@link DefaultTypeSetter}</li>
+     * <li>{@link DefaultPositionSetter}</li>
+     * <li>{@link DefaultMatrixGenerator}</li>
+     * <li>{@link DefaultTypeSetter}</li>
      * </ul>
      */
     public Physics(Accelerator accelerator) {
@@ -58,9 +59,9 @@ public class Physics {
      * @param matrixGenerator
      */
     public Physics(Accelerator accelerator,
-                   PositionSetter positionSetter,
-                   MatrixGenerator matrixGenerator,
-                   TypeSetter typeSetter) {
+            PositionSetter positionSetter,
+            MatrixGenerator matrixGenerator,
+            TypeSetter typeSetter) {
 
         this.accelerator = accelerator;
         this.positionSetter = positionSetter;
@@ -71,32 +72,33 @@ public class Physics {
         makeContainerNeighborhood();
 
         generateMatrix();
-        setParticleCount(10000);  // uses current position setter to create particles
+        setParticleCount(10000); // uses current position setter to create particles
     }
 
     private void calcNxNy() {
-//        nx = (int) Math.ceil(2 * range.range.x / containerSize);
-//        ny = (int) Math.ceil(2 * range.range.y / containerSize);
+        // nx = (int) Math.ceil(2 * range.range.x / containerSize);
+        // ny = (int) Math.ceil(2 * range.range.y / containerSize);
 
-        // currently, "floor" is needed (because containerSize = rmax), so that rmax lies inside "simple" neighborhood
+        // currently, "floor" is needed (because containerSize = rmax), so that rmax
+        // lies inside "simple" neighborhood
         nx = (int) Math.floor(2 / containerSize);
         ny = (int) Math.floor(2 / containerSize);
     }
 
     private void makeContainerNeighborhood() {
-        containerNeighborhood = new int[][]{
-                new int[]{-1, -1},
-                new int[]{0, -1},
-                new int[]{1, -1},
-                new int[]{-1, 0},
-                new int[]{0, 0},
-                new int[]{1, 0},
-                new int[]{-1, 1},
-                new int[]{0, 1},
-                new int[]{1, 1}
+        containerNeighborhood = new int[][] {
+                new int[] { -1, -1 },
+                new int[] { 0, -1 },
+                new int[] { 1, -1 },
+                new int[] { -1, 0 },
+                new int[] { 0, 0 },
+                new int[] { 1, 0 },
+                new int[] { -1, 1 },
+                new int[] { 0, 1 },
+                new int[] { 1, 1 }
         };
 
-        //todo:
+        // todo:
         // top left corner
         // top right corner
         // bottom left corner
@@ -119,12 +121,14 @@ public class Physics {
         makeContainers();
 
         loadDistributor.distributeLoadEvenly(particles.length, preferredNumberOfThreads, i -> {
-            if (!updateThreadsShouldRun.get()) return false;
+            if (!updateThreadsShouldRun.get())
+                return false;
             updateVelocity(i);
             return true;
         });
         loadDistributor.distributeLoadEvenly(particles.length, preferredNumberOfThreads, i -> {
-            if (!updateThreadsShouldRun.get()) return false;
+            if (!updateThreadsShouldRun.get())
+                return false;
             updatePosition(i);
             return true;
         });
@@ -142,7 +146,8 @@ public class Physics {
      * been called, but it will stop after each thread has finished processing its
      * current particle.<br>
      * Note that the next call to {@link #update()} will as always start from
-     * the beginning of the array, so some particles will have been simulated for one
+     * the beginning of the array, so some particles will have been simulated for
+     * one
      * more step than others. But you probably don't have to care about this.
      */
     public void forceUpdateStop() {
@@ -153,8 +158,10 @@ public class Physics {
      * Shutdown the internal thread pool.
      * Blocks until all tasks have completed execution.
      *
-     * @param timeoutMilliseconds how long to wait for update threads to finish their execution (in milliseconds)
-     * @return {@code true} if all tasks terminated and {@code false} if the timeout elapsed before termination
+     * @param timeoutMilliseconds how long to wait for update threads to finish
+     *                            their execution (in milliseconds)
+     * @return {@code true} if all tasks terminated and {@code false} if the timeout
+     *         elapsed before termination
      */
     public boolean shutdown(long timeoutMilliseconds) throws InterruptedException {
         return loadDistributor.shutdown(timeoutMilliseconds);
@@ -164,7 +171,8 @@ public class Physics {
 
     /**
      * Call this to initialize particles or when the particle count changed.
-     * If the particle count changed, new particles will be created using the active position setter.
+     * If the particle count changed, new particles will be created using the active
+     * position setter.
      */
     public void setPositions() {
         Arrays.stream(particles).forEach(this::setPosition);
@@ -181,11 +189,15 @@ public class Physics {
     // PRIVATE METHODS:
 
     /**
-     * Set the size of the particle array.<br><br>
+     * Set the size of the particle array.<br>
+     * <br>
      * If the particle array is null, a new array will be created.
-     * If n is greater than the current particle array size, new particles will be created.
-     * If n is smaller than the current particle array size, random particles will be removed.
-     * In that case, the order of the particles in the array will be random afterwards.<br>
+     * If n is greater than the current particle array size, new particles will be
+     * created.
+     * If n is smaller than the current particle array size, random particles will
+     * be removed.
+     * In that case, the order of the particles in the array will be random
+     * afterwards.<br>
      * New particles will be created using the active position setter.
      * 
      * @param n The new number of particles. Must be 0 or greater.
@@ -201,7 +213,7 @@ public class Physics {
 
             Particle[] newParticles = new Particle[n];
 
-            if (n < particles.length) {  // array becomes shorter
+            if (n < particles.length) { // array becomes shorter
 
                 // randomly shuffle particles first
                 // (otherwise, the container layout becomes visible)
@@ -212,7 +224,7 @@ public class Physics {
                     newParticles[i] = particles[i];
                 }
 
-            } else {  // array becomes longer
+            } else { // array becomes longer
                 // copy old array and add particles to the end
                 for (int i = 0; i < particles.length; i++) {
                     newParticles[i] = particles[i];
@@ -227,25 +239,34 @@ public class Physics {
 
     /**
      * The matrix size should only be changed via this method.
-     * <p>If <code>newSize</code> is smaller than the current size,
+     * <p>
+     * If <code>newSize</code> is smaller than the current size,
      * all particles with type <code>>= newSize</code> will have
      * their type changed to a type <code>< newSize</code> using
      * the current type setter ({@link #typeSetter Physics.typeSetter}).
      */
     public void setMatrixSize(int newSize) {
         Matrix prevMatrix = settings.matrix;
+        Matrix prevScaleMatrix = settings.scalematrix;
         int prevSize = prevMatrix.size();
-        if (newSize == prevSize) return;  // keep previous matrix
+        if (newSize == prevSize)
+            return; // keep previous matrix
 
         settings.matrix = matrixGenerator.makeMatrix(newSize);
+        settings.scalematrix = matrixGenerator.makeMatrix(newSize);
 
         assert settings.matrix.size() == newSize;
 
-        // copy as much as possible from previous matrix
+        // copy as much as possible from previous matrices
         int commonSize = Math.min(prevSize, newSize);
         for (int i = 0; i < commonSize; i++) {
             for (int j = 0; j < commonSize; j++) {
                 settings.matrix.set(i, j, prevMatrix.get(i, j));
+            }
+        }
+        for (int i = 0; i < commonSize; i++) {
+            for (int j = 0; j < commonSize; j++) {
+                settings.scalematrix.set(i, j, prevScaleMatrix.get(i, j));
             }
         }
 
@@ -261,7 +282,8 @@ public class Physics {
 
     /**
      * Use this to avoid the container pattern showing
-     * (i.e. if particles are treated differently depending on their position in the array).
+     * (i.e. if particles are treated differently depending on their position in the
+     * array).
      */
     private void shuffleParticles() {
         Collections.shuffle(Arrays.asList(particles));
@@ -270,8 +292,8 @@ public class Physics {
     /**
      * Creates a new particle and
      * <ol>
-     *     <li>sets its type using the default type setter</li>
-     *     <li>sets its position using the active position setter</li>
+     * <li>sets its type using the default type setter</li>
+     * <li>sets its position using the active position setter</li>
      * </ol>
      * (in that order) and returns it.
      */
@@ -297,11 +319,11 @@ public class Physics {
     private void makeContainers() {
 
         // ensure that nx and ny are still OK
-        containerSize = settings.rmax;//todo: in the future, containerSize should be independent of rmax
-        calcNxNy();//todo: only change if containerSize (or range) changed
-        //todo: (future) containerNeighborhood depends on rmax and containerSize.
+        containerSize = settings.rmax;// todo: in the future, containerSize should be independent of rmax
+        calcNxNy();// todo: only change if containerSize (or range) changed
+        // todo: (future) containerNeighborhood depends on rmax and containerSize.
         // if (rmax changed or containerSize changed) {
-        //     makeContainerNeighborhood();
+        // makeContainerNeighborhood();
         // }
 
         // init arrays
@@ -332,7 +354,7 @@ public class Physics {
             int ci = getContainerIndex(p.position);
             int i = containers[ci];
             particlesBuffer[i] = p;
-            containers[ci]++;  // for next access
+            containers[ci]++; // for next access
         }
 
         // swap buffers
@@ -383,8 +405,10 @@ public class Physics {
     }
 
     private double computeFrictionFactor(double halfLife, double dt) {
-        if (halfLife == 0) return 0.0;  // avoid division by zero
-        if (halfLife == Double.POSITIVE_INFINITY) return 1.0;
+        if (halfLife == 0)
+            return 0.0; // avoid division by zero
+        if (halfLife == Double.POSITIVE_INFINITY)
+            return 1.0;
 
         return Math.pow(0.5, dt / halfLife);
     }
@@ -415,11 +439,16 @@ public class Physics {
             int stop = containers[ci];
 
             for (int j = start; j < stop; j++) {
-                if (i == j) continue;
+                if (i == j)
+                    continue;
 
                 Particle q = particles[j];
 
+                double positionScaler = (settings.scalematrix.get(p.type, q.type) * -5) + 6;
+
                 Vector3d relativePosition = connection(p.position, q.position);
+
+                relativePosition.mul(positionScaler);
 
                 double distanceSquared = relativePosition.lengthSquared();
                 // only check particles that are closer than or at rmax
@@ -460,6 +489,7 @@ public class Physics {
      * If <code>settings.wrap == true</code>, this will
      * return the shortest possible distance, even if
      * that connection goes across the world's borders.
+     * 
      * @return shortest possible distance between two points
      */
     public double distance(Vector3d pos1, Vector3d pos2) {
@@ -467,21 +497,26 @@ public class Physics {
     }
 
     /**
-     * Changes the coordinates of the given vector to ensures that they are in the correct range.
+     * Changes the coordinates of the given vector to ensures that they are in the
+     * correct range.
      * <ul>
-     *     <li>
-     *         If <code>settings.wrap == false</code>,
-     *         the coordinates are simply clamped to [-1.0, 1.0].
-     *     </li>
-     *     <li>
-     *         If <code>settings.wrap == true</code>,
-     *         the coordinates are made to be inside [-1.0, 1.0) by adding or subtracting multiples of 2.
-     *     </li>
+     * <li>
+     * If <code>settings.wrap == false</code>,
+     * the coordinates are simply clamped to [-1.0, 1.0].
+     * </li>
+     * <li>
+     * If <code>settings.wrap == true</code>,
+     * the coordinates are made to be inside [-1.0, 1.0) by adding or subtracting
+     * multiples of 2.
+     * </li>
      * </ul>
-     * This method is called by {@link #update()} after changing the particles' positions.
+     * This method is called by {@link #update()} after changing the particles'
+     * positions.
      * It is just exposed for convenience.
      * That is, if you change the coordinates of the particles yourself,
-     * you can use this to make sure that the coordinates are in the correct range before {@link #update()} is called.
+     * you can use this to make sure that the coordinates are in the correct range
+     * before {@link #update()} is called.
+     * 
      * @param position
      */
     public void ensurePosition(Vector3d position) {
